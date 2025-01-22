@@ -2,8 +2,40 @@ import streamlit as st
 import pandas as pd
 import io
 
+# Add custom CSS for floating buttons
+st.markdown("""
+<style>
+.floating-container {
+   position: fixed;
+   bottom: 20px;
+   right: 20px;
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   z-index: 999;
+}
+.floating-button {
+   background-color: #1f1f1f;
+   color: white;
+   padding: 10px 20px;
+   border-radius: 5px;
+   text-decoration: none;
+   text-align: center;
+}
+</style>
+""", unsafe_allow_html=True)
+
 def main():
    st.title("Excel Image Viewer")
+   
+   # Add floating buttons container
+   st.markdown("""
+       <div class="floating-container" id="floating-buttons">
+           <a href="#top" class="floating-button">⬆️ Top</a>
+           <a href="#bottom" class="floating-button">⬇️ Bottom</a>
+           <a href="#download" class="floating-button">💾 Download</a>
+       </div>
+   """, unsafe_allow_html=True)
    
    uploaded_file = st.file_uploader("Upload Excel file", type=['xlsx'])
    
@@ -55,6 +87,7 @@ def main():
            
            selected_df = df[df['da_controllare']]
            if not selected_df.empty:
+               st.markdown('<div id="download"></div>', unsafe_allow_html=True)
                output = io.BytesIO()
                with pd.ExcelWriter(output, engine='openpyxl') as writer:
                    selected_df.to_excel(writer, index=False)
@@ -66,6 +99,9 @@ def main():
                    "selected_items.xlsx",
                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                )
+   
+   # Add bottom anchor
+   st.markdown('<div id="bottom"></div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
    main()
