@@ -1,8 +1,10 @@
 import streamlit as st
 import pandas as pd
 import io
+import requests
 
 ITEMS_PER_PAGE = 50
+EXCEL_URL = "https://github.com/v-heissu/excel-viewer-resto/blob/7e592d652eb9abf6077343db8f2b0292526797fe/Sample.xlsx"
 
 st.markdown("""
 <style>
@@ -44,85 +46,67 @@ def main():
            <a href="#download" class="floating-button">💾 Download</a>
        </div>
    """, unsafe_allow_html=True)
-   
-   uploaded_file = st.file_uploader("Upload Excel file", type=['xlsx'])
-   
-   if uploaded_file:
-       if 'df' not in st.session_state:
-           st.session_state.df = pd.read_excel(uploaded_file)
-           st.session_state.page = 0
-       
-       df = st.session_state.df
-       
-       if 'col_mapping' not in st.session_state:
-           st.session_state.col_mapping = {}
-       
-       st.subheader("Column Mapping")
-       all_columns = df.columns.tolist()
-       
-       col_mapping = {
-           'url': st.selectbox('URL column', [''] + all_columns),
-           'image': st.selectbox('Image URL column', [''] + all_columns),
-           'place_id': st.selectbox('Place ID column', [''] + all_columns),
-           'id': st.selectbox('ID column', [''] + all_columns)
+
+   if 'df' not in st.session_state:
+       response = requests.get(EXCEL_URL)
+       excel_data = io.BytesIO(response.content)
+       st.session_state.df = pd.read_excel(excel_data)
+       st.session_state.page = 0
+       st.session_state.col_mapping = {
+           'url': 'URL',  # Replace with your actual column names
+           'image': 'ImageURL',
+           'place_id': 'GooglePlaceID',
+           'id': 'ID'
        }
-       
-       if st.button("Confirm Mapping"):
-           if '' in col_mapping.values():
-               st.error("Select all columns")
-               return
-           st.session_state.col_mapping = col_mapping
-           if 'da_controllare' not in df.columns:
-               df['da_controllare'] = False
-           
-       if 'col_mapping' in st.session_state and st.session_state.col_mapping:
-           total_pages = (len(df) + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE
-           
-           # Top pagination
-           col1, col2, col3 = st.columns([1, 2, 1])
-           with col2:
-               page = st.number_input('Page', min_value=1, max_value=total_pages, value=st.session_state.page + 1)
-               st.session_state.page = page - 1
-           
-           start_idx = st.session_state.page * ITEMS_PER_PAGE
-           end_idx = start_idx + ITEMS_PER_PAGE
-           
-           display_data_chunk(df, start_idx, end_idx, st.session_state.col_mapping)
-           
-           # Bottom pagination
-           st.markdown('<div class="pagination">', unsafe_allow_html=True)
-           cols = st.columns(4)
-           with cols[0]:
-               if st.button('⏮️ First', key='first'):
-                   st.session_state.page = 0
-           with cols[1]:
-               if st.button('◀️ Prev', key='prev') and st.session_state.page > 0:
-                   st.session_state.page -= 1
-           with cols[2]:
-               if st.button('Next ▶️', key='next') and st.session_state.page < total_pages - 1:
-                   st.session_state.page += 1 
-           with cols[3]:
-               if st.button('Last ⏭️', key='last'):
-                   st.session_state.page = total_pages - 1
-           
-           st.write(f'Page {st.session_state.page + 1} of {total_pages}')
-           st.markdown('</div>', unsafe_allow_html=True)
-           
-           selected_df = df[df['da_controllare']]
-           if not selected_df.empty:
-               st.markdown('<div id="download"></div>', unsafe_allow_html=True)
-               output = io.BytesIO()
-               with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                   selected_df.to_excel(writer, index=False)
-               output.seek(0)
-               
-               st.download_button(
-                   "Download Selected",
-                   output,
-                   "selected_items.xlsx",
-                   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-               )
+       if 'da_controllare' not in st.session_state.df.columns:
+           st.session_state.df['da_controllare'] = False
    
+   df = st.session_state.df
+   total_pages = (len(df) + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE
+   
+   col1, col2, col3 = st.columns([1, 2, 1])
+   with col2:
+       page = st.number_input('Page', min_value=1, max_value=total_pages, value=st.session_state.page + 1)
+       st.session_state.page = page - 1
+   
+   start_idx = st.session_state.page * ITEMS_PER_PAGE
+   end_idx = start_idx + ITEMS_PER_PAGE
+   
+   display_data_chunk(df, start_idx, end_idx, st.session_state.col_mapping)
+   
+   st.markdown('<div class="pagination">', unsafe_allow_html=True)
+   cols = st.columns(4)
+   with cols[0]:
+       if st.button('⏮️ First', key='first'):
+           st.session_state.page = 0
+   with cols[1]:
+       if st.button('◀️ Prev', key='prev') and st.session_state.page > 0:
+           st.session_state.page -= 1
+   with cols[2]:
+       if st.button('Next ▶️', key='next') and st.session_state.page < total_pages - 1:
+           st.session_state.page += 1 
+   with cols[3]:
+       if st.button('Last ⏭️', key='last'):
+           st.session_state.page = total_pages - 1
+   
+   st.write(f'Page {st.session_state.page + 1} of {total_pages}')
+   st.markdown('</div>', unsafe_allow_html=True)
+   
+   selected_df = df[df['da_controllare']]
+   if not selected_df.empty:
+       st.markdown('<div id="download"></div>', unsafe_allow_html=True)
+       output = io.BytesIO()
+       with pd.ExcelWriter(output, engine='openpyxl') as writer:
+           selected_df.to_excel(writer, index=False)
+       output.seek(0)
+       
+       st.download_button(
+           "Download Selected",
+           output,
+           "selected_items.xlsx",
+           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+       )
+
    st.markdown('<div id="bottom"></div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
