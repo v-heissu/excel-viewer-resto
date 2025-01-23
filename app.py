@@ -116,6 +116,18 @@ def handle_download():
            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
        )
 
+def load_excel_file():
+   headers = {
+       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+   }
+   response = requests.get(EXCEL_URL, headers=headers)
+   if response.status_code != 200:
+       raise Exception(f"Failed to fetch Excel file: {response.status_code}")
+       
+   excel_data = io.BytesIO(response.content)
+   excel_data.seek(0)
+   return pd.read_excel(excel_data, engine='openpyxl')
+
 def main():
    st.title("Excel Image Viewer")
    add_floating_buttons()
@@ -123,14 +135,8 @@ def main():
    try:
        if 'df' not in st.session_state:
            with st.spinner('Loading data...'):
-               response = requests.get(EXCEL_URL)
-               if response.status_code != 200:
-                   st.error(f"Failed to fetch Excel file: {response.status_code}")
-                   return
-               
-               excel_data = io.BytesIO(response.content)
                try:
-                   df = pd.read_excel(excel_data, engine='openpyxl')
+                   df = load_excel_file()
                    validate_and_setup_dataframe(df)
                except Exception as e:
                    st.error(f"Error reading Excel: {str(e)}")
@@ -138,7 +144,6 @@ def main():
 
        display_data_and_pagination()
        handle_download()
-
        st.markdown('<div id="bottom"></div>', unsafe_allow_html=True)
 
    except Exception as e:
