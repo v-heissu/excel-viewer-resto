@@ -4,7 +4,7 @@ import io
 import requests
 
 ITEMS_PER_PAGE = 50
-EXCEL_URL = "https://github.com/v-heissu/excel-viewer-resto/blob/9a8ded98ec7faf25361de87748c629ea594c6eab/sample_fd.xlsx"
+EXCEL_URL = "https://raw.githubusercontent.com/v-heissu/excel-viewer-resto/9a8ded98ec7faf25361de87748c629ea594c6eab/sample_fd.xlsx"
 
 st.markdown("""
 <style>
