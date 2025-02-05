@@ -101,6 +101,14 @@ def validate_and_setup_dataframe(df, analysis_cache):
     if missing_cols:
         raise ValueError(f"Missing columns: {', '.join(missing_cols)}")
     
+    # Initialize col_mapping first
+    st.session_state.col_mapping = {
+        'url': 'URL',
+        'image': 'ImageURL',
+        'place_id': 'GooglePlaceID',
+        'id': 'ID'
+    }
+    
     # Add analysis for all images at startup
     if 'image_analysis' not in df.columns:
         df['image_analysis'] = df[st.session_state.col_mapping['image']].apply(
@@ -109,21 +117,7 @@ def validate_and_setup_dataframe(df, analysis_cache):
     
     st.session_state.df = df
     st.session_state.page = 0
-    st.session_state.col_mapping = {
-        'url': 'URL',
-        'image': 'ImageURL',
-        'place_id': 'GooglePlaceID',
-        'id': 'ID'
-    }
     
-    # Set image analysis if not already present
-    if 'image_analysis' not in df.columns:
-        df['image_analysis'] = None
-    
-    # Analyze images only if they haven't been analyzed yet
-    for idx, row in df.iterrows():
-        if pd.isna(row['image_analysis']) and pd.notna(row[st.session_state.col_mapping['image']]):
-            df.at[idx, 'image_analysis'] = analyze_image(row[st.session_state.col_mapping['image']], analysis_cache)
     if 'da_controllare' not in st.session_state.df.columns:
         st.session_state.df['da_controllare'] = False
 
