@@ -59,7 +59,7 @@ def analyze_image(image_url, analysis_cache):
                     "content": [
                         {"type": "text", "text": """Analyze this image and provide a JSON with:
                         {
-                            "type": ["plate"|"signboard"|"restaurant_external"|"other"],
+                            "type": ["plate"|"signboard"|"other"],
                             "short_description": "max 5 keywords",
                             "alt": "alt tag content following SEO guidelines",
                             "verbose_description": "detailed description - max 25 words"
@@ -115,6 +115,15 @@ def validate_and_setup_dataframe(df, analysis_cache):
         'place_id': 'GooglePlaceID',
         'id': 'ID'
     }
+    
+    # Set image analysis if not already present
+    if 'image_analysis' not in df.columns:
+        df['image_analysis'] = None
+    
+    # Analyze images only if they haven't been analyzed yet
+    for idx, row in df.iterrows():
+        if pd.isna(row['image_analysis']) and pd.notna(row[st.session_state.col_mapping['image']]):
+            df.at[idx, 'image_analysis'] = analyze_image(row[st.session_state.col_mapping['image']], analysis_cache)
     if 'da_controllare' not in st.session_state.df.columns:
         st.session_state.df['da_controllare'] = False
 
