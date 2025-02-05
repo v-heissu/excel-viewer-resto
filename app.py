@@ -215,16 +215,6 @@ def load_excel_file():
 
 def main():
    st.title("Excel Image Viewer with AI Analysis")
-   
-   if 'df' in st.session_state and not st.session_state.df.empty:
-       df_json = st.session_state.df.to_json(orient='records')
-       st.download_button(
-           "Download Complete Dataset JSON",
-           df_json,
-           "complete_dataset.json",
-           "application/json",
-       )
-   
    add_floating_buttons()
 
    try:
