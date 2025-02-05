@@ -52,7 +52,7 @@ def analyze_image(image_url, analysis_cache):
         image_content = requests.get(image_url).content
         
         response = client.chat.completions.create(
-            model="gpt-4-vision-preview",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "user",
