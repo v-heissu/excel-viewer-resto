@@ -136,20 +136,17 @@ def display_data_chunk(df, start_idx, end_idx, col_mapping):
                 st.write("Error loading image")
         
         with col2:
-            st.write(f"URL: {row[col_mapping['url']]}")
-            st.write(f"Place ID: {row[col_mapping['place_id']]}")
-            
-            # Display analysis results if available
-            if pd.notna(df.at[idx, 'image_analysis']):
-                try:
+            try:
+                if pd.notna(df.at[idx, 'image_analysis']):
                     analysis = json.loads(df.at[idx, 'image_analysis'])
-                    st.write("Image Analysis:")
-                    st.write(f"• Type: {analysis['type']}")
-                    st.write(f"• Short Description: {analysis['short_description']}")
-                    st.write(f"• Alt Tag: {analysis['alt']}")
-                    st.write(f"• Description: {analysis['verbose_description']}")
-                except:
-                    st.write(df.at[idx, 'image_analysis'])
+                    st.write(f"URL: {row[col_mapping['url']]}")
+                    st.write(f"Place ID: {row[col_mapping['place_id']]}")
+                    st.write(f"Type: {analysis['type']}")
+                    st.write(f"Description: {analysis['verbose_description']}")
+                    st.write(f"Keywords: {analysis['short_description']}")
+                    st.write(f"Alt Text: {analysis['alt']}")
+            except:
+                st.write("Error parsing analysis")
             
             df.iat[idx, df.columns.get_loc('da_controllare')] = st.checkbox(
                 "Da controllare",
