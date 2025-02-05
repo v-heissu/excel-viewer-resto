@@ -141,8 +141,15 @@ def display_data_chunk(df, start_idx, end_idx, col_mapping):
             
             # Display analysis results if available
             if pd.notna(df.at[idx, 'image_analysis']):
-                with st.expander("Show Image Analysis"):
-                    st.markdown(f"```json\n{df.at[idx, 'image_analysis']}\n```")
+                try:
+                    analysis = json.loads(df.at[idx, 'image_analysis'])
+                    st.write("Image Analysis:")
+                    st.write(f"• Type: {analysis['type']}")
+                    st.write(f"• Short Description: {analysis['short_description']}")
+                    st.write(f"• Alt Tag: {analysis['alt']}")
+                    st.write(f"• Description: {analysis['verbose_description']}")
+                except:
+                    st.write(df.at[idx, 'image_analysis'])
             
             df.iat[idx, df.columns.get_loc('da_controllare')] = st.checkbox(
                 "Da controllare",
