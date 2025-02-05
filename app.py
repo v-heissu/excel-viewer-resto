@@ -136,17 +136,21 @@ def display_data_chunk(df, start_idx, end_idx, col_mapping):
                 st.write("Error loading image")
         
         with col2:
-            try:
-                if pd.notna(df.at[idx, 'image_analysis']):
-                    analysis = json.loads(df.at[idx, 'image_analysis'])
-                    st.write(f"URL: {row[col_mapping['url']]}")
-                    st.write(f"Place ID: {row[col_mapping['place_id']]}")
-                    st.write(f"Type: {analysis['type']}")
-                    st.write(f"Description: {analysis['verbose_description']}")
-                    st.write(f"Keywords: {analysis['short_description']}")
-                    st.write(f"Alt Text: {analysis['alt']}")
-            except:
-                st.write("Error parsing analysis")
+            if pd.notna(df.at[idx, 'image_analysis']):
+                st.write(f"URL: {row[col_mapping['url']]}")
+                st.write(f"Place ID: {row[col_mapping['place_id']]}")
+                
+                analysis_text = df.at[idx, 'image_analysis']
+                try:
+                    # Try parsing as JSON first
+                    analysis = json.loads(analysis_text)
+                    st.write(f"Type: {analysis.get('type', 'N/A')}")
+                    st.write(f"Description: {analysis.get('verbose_description', 'N/A')}")
+                    st.write(f"Keywords: {analysis.get('short_description', 'N/A')}")
+                    st.write(f"Alt Text: {analysis.get('alt', 'N/A')}")
+                except json.JSONDecodeError:
+                    # If not JSON, display as plain text
+                    st.write("Analysis:", analysis_text)
             
             df.iat[idx, df.columns.get_loc('da_controllare')] = st.checkbox(
                 "Da controllare",
