@@ -52,7 +52,7 @@ def analyze_image(image_url, analysis_cache):
         image_content = requests.get(image_url).content
         
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4-vision-preview",
             messages=[
                 {
                     "role": "user",
@@ -215,6 +215,17 @@ def load_excel_file():
 
 def main():
     st.title("Excel Image Viewer with AI Analysis")
+    
+    # Add JSON download button at top
+    if 'df' in st.session_state and not st.session_state.df.empty:
+        json_data = st.session_state.df['image_analysis'].dropna().to_json(orient='records')
+        st.download_button(
+            "Download All Analysis JSON",
+            json_data,
+            "analysis.json",
+            "application/json",
+        )
+    
     add_floating_buttons()
 
     try:
