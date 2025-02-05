@@ -218,11 +218,11 @@ def main():
     
     # Add JSON download button at top
     if 'df' in st.session_state and not st.session_state.df.empty:
-        json_data = st.session_state.df['image_analysis'].dropna().to_json(orient='records')
+        df_json = st.session_state.df.to_json(orient='records')
         st.download_button(
-            "Download All Analysis JSON",
-            json_data,
-            "analysis.json",
+            "Download Complete Dataset JSON",
+            df_json,
+            "complete_dataset.json",
             "application/json",
         )
     
