@@ -180,8 +180,7 @@ def load_excel_file():
 
 def main():
     st.title("Excel Image Viewer with AI Analysis")
-    add_floating_buttons()
-
+    
     try:
         analysis_cache = load_or_create_analysis_cache()
         
@@ -193,8 +192,29 @@ def main():
                 except Exception as e:
                     st.error(f"Error reading Excel: {str(e)}")
                     return
-
-        display_data(st.session_state.df, st.session_state.col_mapping)
+        
+        # Extract types from analysis for filtering
+        types = set()
+        for analysis in st.session_state.df['image_analysis'].dropna():
+            try:
+                analysis_json = json.loads(analysis.replace("```json", "").replace("```", "").strip())
+                if isinstance(analysis_json.get('type'), list):
+                    types.update(analysis_json['type'])
+                else:
+                    types.add(analysis_json.get('type'))
+            except:
+                continue
+        
+        # Add filter
+        selected_types = st.multiselect('Filter by Type:', list(sorted(types)))
+        
+        # Filter dataframe based on selection
+        filtered_df = st.session_state.df
+        if selected_types:
+            filtered_df = filtered_df[filtered_df['image_analysis'].apply(lambda x: any(t in json.loads(x.replace("```json", "").replace("```", "").strip()).get('type', []) for t in selected_types) if pd.notna(x) else False)]
+        
+        add_floating_buttons()
+        display_data(filtered_df, st.session_state.col_mapping)
         handle_download()
         st.markdown('<div id="bottom"></div>', unsafe_allow_html=True)
 
