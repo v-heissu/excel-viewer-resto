@@ -179,7 +179,7 @@ def load_excel_file():
     return pd.read_excel(excel_data, engine='openpyxl')
 
 def main():
-    st.title("Excel Image Viewer with AI Analysis")
+    st.title("Restaurant Cards Image Viewer with AI Analysis")
     
     try:
         analysis_cache = load_or_create_analysis_cache()
